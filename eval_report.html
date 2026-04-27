@@ -1,0 +1,96 @@
+
+    <html>
+    <head><title>Eval Report</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+    </head>
+    <body>
+        <h1>Coaching System Evaluation Report</h1>
+        <h2>Classification Metrics</h2>
+        <table>
+            <tr><th>Pathology</th><th>Precision</th><th>Recall</th><th>F1-Score</th></tr>
+    
+            <tr>
+                <td>revenge_trading</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr>
+                <td>overtrading</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr>
+                <td>fomo_entries</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr>
+                <td>plan_non_adherence</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr>
+                <td>premature_exit</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr>
+                <td>loss_running</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr>
+                <td>session_tilt</td>
+                <td>0.2</td>
+                <td>1.0</td>
+                <td>0.33</td>
+            </tr>
+        
+            <tr>
+                <td>time_of_day_bias</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr>
+                <td>position_sizing_inconsistency</td>
+                <td>1.0</td>
+                <td>1.0</td>
+                <td>1.0</td>
+            </tr>
+        
+            <tr style="font-weight: bold; background-color: #eee;">
+                <td>Macro Avg</td>
+                <td>0.91</td>
+                <td>1.0</td>
+                <td>0.93</td>
+            </tr>
+        </table>
+        
+        <h2>Confusion Matrix</h2>
+        <p>Rows: True Label | Columns: Predicted Label</p>
+        <table>
+            <tr><th>True \ Pred</th>
+    <th>revenge_trading</th><th>overtrading</th><th>fomo_entries</th><th>plan_non_adherence</th><th>premature_exit</th><th>loss_running</th><th>session_tilt</th><th>time_of_day_bias</th><th>position_sizing_inconsistency</th><th>None</th></tr><tr><td><strong>revenge_trading</strong></td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>overtrading</strong></td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>fomo_entries</strong></td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>plan_non_adherence</strong></td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>premature_exit</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>loss_running</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>session_tilt</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td><strong>time_of_day_bias</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td></tr><tr><td><strong>position_sizing_inconsistency</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+        </table>
+    </body>
+    </html>
+    

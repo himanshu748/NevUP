@@ -1,0 +1,52 @@
+{
+  "revenge_trading": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "overtrading": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "fomo_entries": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "plan_non_adherence": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "premature_exit": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "loss_running": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "session_tilt": {
+    "precision": 0.2,
+    "recall": 1.0,
+    "f1": 0.33
+  },
+  "time_of_day_bias": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "position_sizing_inconsistency": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "macro_avg": {
+    "precision": 0.91,
+    "recall": 1.0,
+    "f1": 0.93
+  }
+}
