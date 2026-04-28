@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
 
 from app.auth.router import router as auth_router
+from app.config import settings
 from app.health.router import router as health_router
 from app.memory.router import router as memory_router
 from app.events.router import router as events_router
@@ -40,7 +41,7 @@ def _setup_logging() -> None:
     root = logging.getLogger("nevup")
     root.handlers.clear()
     root.addHandler(handler)
-    root.setLevel(logging.INFO)
+    root.setLevel(settings.LOG_LEVEL.upper())
 
 
 # ── Lifespan ─────────────────────────────────────────────────────────────────

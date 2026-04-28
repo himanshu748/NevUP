@@ -101,8 +101,12 @@ async def get_context(
         SessionMemory.user_id == user_id,
     )
 
-    # Get all user sessions and filter in Python for portability
-    # (ARRAY containment operators vary by backend)
+    # Fetch all sessions for this user and filter in Python for tag containment.
+    # This is portable across DB backends (avoiding ARRAY @> operator differences).
+    # Scale note: for users with thousands of sessions this full-scan approach
+    # would be a bottleneck.  A production system should index the ``tags`` column
+    # (e.g. GIN index on JSONB/ARRAY) and push the tag-containment filter into
+    # SQL so the database only returns the matching rows.
     session_result = await db.execute(
         session_stmt.order_by(SessionMemory.created_at.desc())
     )
