@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 .DS_Store
+# Generated evaluation artefacts — re-created by running eval.py
+eval_report.html
+eval_report.json
