@@ -1,6 +1,7 @@
 .env
 __pycache__/
 *.pyc
+*.egg-info/
 .DS_Store
 # Generated evaluation artefacts — re-created by running eval.py
 eval_report.html

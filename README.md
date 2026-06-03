@@ -41,9 +41,10 @@ You do **not** need a `.env` file to run locally. If you want to override defaul
 
 | Variable | Required | Default (docker compose) | Description |
 |---|---:|---|---|
+| `APP_ENV` | No | `development` | Set to `production` in hosted deploys to require a stable `JWT_SECRET` |
 | `DATABASE_URL` | No | `postgresql+asyncpg://nevup:nevup@postgres:5432/nevup` | Postgres DSN (asyncpg) |
 | `REDIS_URL` | No | `redis://redis:6379/0` | Redis connection URL |
-| `JWT_SECRET` | No | *(generated at startup if unset)* | HS256 signing secret for JWT issuance/verification |
+| `JWT_SECRET` | Required in production | *(generated at startup in development if unset)* | Stable HS256 signing secret for JWT issuance/verification |
 | `JWT_ALGORITHM` | No | `HS256` | JWT signing algorithm |
 | `JWT_EXPIRE_HOURS` | No | `24` | Token expiry window |
 | `HF_TOKEN` | No | *(empty)* | HuggingFace Inference API token for coaching SSE |

@@ -4,6 +4,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      APP_ENV: ${APP_ENV:-development}
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://nevup:nevup@postgres:5432/nevup}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       # Optional. If unset, the app generates an ephemeral secret at startup.
