@@ -13,6 +13,7 @@ from app.events.router import (
     coaching_event_generator,
     compact_session_context,
     detect_signal_realtime,
+    parse_iso_timestamp,
     TradeEvent,
 )
 from tests.conftest import USER_A_ID, USER_B_ID, auth_header
@@ -88,6 +89,28 @@ class TestDetectSignalRealtime:
     def test_plan_adherence_rejects_out_of_range_score(self):
         with pytest.raises(ValueError):
             _trade(planAdherence=6)
+
+    def test_rejects_invalid_entry_timestamp(self):
+        with pytest.raises(ValueError, match="timestamp must be ISO 8601"):
+            _trade(entryAt="not-a-date")
+
+    def test_rejects_invalid_exit_timestamp(self):
+        with pytest.raises(ValueError, match="timestamp must be ISO 8601"):
+            _trade(exitAt="tomorrow afternoon")
+
+    def test_accepts_iso_timestamp_with_timezone_offset(self):
+        t = _trade(entryAt="2026-01-15T14:00:00+05:30")
+
+        assert parse_iso_timestamp(t.entryAt).hour == 8
+        assert detect_signal_realtime(t) is None
+
+    def test_time_of_day_bias_uses_utc_hour_for_offset_timestamp(self):
+        t = _trade(entryAt="2026-01-15T18:30:00+05:30", outcome="loss")
+        result = detect_signal_realtime(t)
+
+        assert result is not None
+        assert result["signal"] == "time_of_day_bias"
+        assert "hour 13:00 UTC" in result["claim"]
 
     def test_rejects_oversized_rationale(self):
         with pytest.raises(ValueError):

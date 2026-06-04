@@ -152,9 +152,9 @@ Notes:
 - Session tags are normalized to lowercase underscore format, deduplicated, and
   capped at 20 tags with 64 characters each.
 - Hallucination audit payloads are bounded to 8,000 characters.
-- Trade event IDs, labels, timestamps, and rationale fields are bounded before
-  prompt construction; generated coaching prompts are compacted before provider
-  calls.
+- Trade event IDs, labels, ISO-8601 timestamps, and rationale fields are
+  validated before prompt construction; generated coaching prompts are
+  compacted before provider calls.
 - If `HF_TOKEN` is not set, the stream will emit an `error` event.
 - If the Hugging Face provider fails, the stream emits
   `COACHING_PROVIDER_ERROR` instead of raw provider exception text.

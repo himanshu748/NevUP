@@ -1,12 +1,13 @@
 import asyncio
 import json
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from huggingface_hub import AsyncInferenceClient
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
@@ -43,6 +44,25 @@ class TradeEvent(BaseModel):
     emotionalState: Optional[str] = Field(default=None, max_length=MAX_LABEL_CHARS)
     entryRationale: Optional[str] = Field(default=None, max_length=MAX_RATIONALE_CHARS)
     revengeFlag: Optional[bool] = None
+
+    @field_validator("entryAt", "exitAt")
+    @classmethod
+    def validate_iso_timestamp(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        try:
+            parse_iso_timestamp(value)
+        except ValueError as exc:
+            raise ValueError("timestamp must be ISO 8601, e.g. 2026-01-15T09:30:00Z") from exc
+        return value
+
+
+def parse_iso_timestamp(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
 
 def detect_signal_realtime(trade: TradeEvent) -> Optional[dict]:
     """Heuristic real-time signal detector for a single trade event.
@@ -190,19 +210,16 @@ def detect_signal_realtime(trade: TradeEvent) -> Optional[dict]:
     # Detectable only when we know the trade was a loss and it was entered
     # during the afternoon session (hour >= 13 UTC).
     if trade.outcome == "loss" and trade.entryAt:
-        try:
-            entry_hour = int(trade.entryAt[11:13])
-            if entry_hour >= 13:
-                return {
-                    "signal": "time_of_day_bias",
-                    "claim": (
-                        f"Losing trade entered during the afternoon session "
-                        f"(hour {entry_hour}:00 UTC). User may be over-trading "
-                        "in historically weak time windows."
-                    ),
-                }
-        except (ValueError, IndexError):
-            pass
+        entry_hour = parse_iso_timestamp(trade.entryAt).hour
+        if entry_hour >= 13:
+            return {
+                "signal": "time_of_day_bias",
+                "claim": (
+                    f"Losing trade entered during the afternoon session "
+                    f"(hour {entry_hour}:00 UTC). User may be over-trading "
+                    "in historically weak time windows."
+                ),
+            }
 
     return None
 
