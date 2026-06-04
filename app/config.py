@@ -9,6 +9,7 @@ unintended ephemeral key.
 
 import secrets
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -25,6 +26,24 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
+
+    @field_validator(
+        "APP_ENV",
+        "DATABASE_URL",
+        "REDIS_URL",
+        "JWT_SECRET",
+        "JWT_ALGORITHM",
+        "HF_TOKEN",
+        "HF_MODEL",
+        "HF_PROVIDER",
+        "LOG_LEVEL",
+        mode="before",
+    )
+    @classmethod
+    def strip_string_settings(cls, value: object) -> object:
+        if isinstance(value, str):
+            return value.strip()
+        return value
 
 
 settings = Settings()

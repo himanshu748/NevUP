@@ -253,7 +253,8 @@ async def coaching_event_generator(request: Request, trade: TradeEvent, db: Asyn
         {"role": "user", "content": prompt}
     ]
     
-    if not settings.HF_TOKEN:
+    hf_token = settings.HF_TOKEN.strip()
+    if not hf_token:
         logger.warning("HF_TOKEN is not set. Cannot call HF Inference API.")
         yield {
             "event": "error",
@@ -264,7 +265,7 @@ async def coaching_event_generator(request: Request, trade: TradeEvent, db: Asyn
     client = AsyncInferenceClient(
         model=settings.HF_MODEL,
         provider=settings.HF_PROVIDER or None,
-        token=settings.HF_TOKEN,
+        token=hf_token,
     )
     
     try:

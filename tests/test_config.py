@@ -40,11 +40,16 @@ def test_production_requires_jwt_secret(monkeypatch):
         _reload_config(monkeypatch, APP_ENV="production")
 
 
+def test_production_rejects_blank_jwt_secret(monkeypatch):
+    with pytest.raises(RuntimeError, match="JWT_SECRET must be set"):
+        _reload_config(monkeypatch, APP_ENV="production", JWT_SECRET="   ")
+
+
 def test_production_accepts_stable_jwt_secret(monkeypatch):
     config = _reload_config(
         monkeypatch,
-        APP_ENV="production",
-        JWT_SECRET="stable-secret-for-hosted-production",
+        APP_ENV=" production ",
+        JWT_SECRET=" stable-secret-for-hosted-production ",
     )
 
     assert config.settings.JWT_SECRET == "stable-secret-for-hosted-production"
@@ -63,9 +68,19 @@ def test_huggingface_model_and_provider_are_configurable(monkeypatch):
     config = _reload_config(
         monkeypatch,
         APP_ENV="development",
-        HF_MODEL="org/model",
-        HF_PROVIDER="fireworks-ai",
+        HF_MODEL=" org/model ",
+        HF_PROVIDER=" fireworks-ai ",
     )
 
     assert config.settings.HF_MODEL == "org/model"
     assert config.settings.HF_PROVIDER == "fireworks-ai"
+
+
+def test_blank_huggingface_token_is_missing(monkeypatch):
+    config = _reload_config(
+        monkeypatch,
+        APP_ENV="development",
+        HF_TOKEN="   ",
+    )
+
+    assert config.settings.HF_TOKEN == ""

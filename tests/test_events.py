@@ -339,3 +339,33 @@ async def test_coaching_stream_sanitizes_provider_error(monkeypatch):
             "data": json.dumps({"error": "COACHING_PROVIDER_ERROR"}),
         }
     ]
+
+
+@pytest.mark.asyncio
+async def test_coaching_stream_treats_blank_hf_token_as_missing(monkeypatch):
+    async def fake_get_context(db, user_id, signal, limit):
+        return ([], [])
+
+    request = SimpleNamespace(is_disconnected=AsyncMock(return_value=False))
+    client = MagicMock()
+    monkeypatch.setattr(events_router, "get_context", fake_get_context)
+    monkeypatch.setattr(events_router, "AsyncInferenceClient", client)
+    monkeypatch.setattr(events_router.settings, "HF_TOKEN", "   ")
+
+    events = [
+        event
+        async for event in coaching_event_generator(
+            request,
+            _trade(entryRationale="Not in plan, chasing the move"),
+            AsyncMock(),
+            {"signal": "fomo_entries", "claim": "FOMO detected"},
+        )
+    ]
+
+    assert events == [
+        {
+            "event": "error",
+            "data": json.dumps({"error": "HF_TOKEN not configured"}),
+        }
+    ]
+    client.assert_not_called()
