@@ -18,25 +18,30 @@ from app.memory.service import get_context
 router = APIRouter(tags=["Events"])
 logger = logging.getLogger(__name__)
 
-HF_MODEL = "Qwen/Qwen2.5-72B-Instruct"
+MAX_ID_CHARS = 128
+MAX_LABEL_CHARS = 64
+MAX_RATIONALE_CHARS = 1_000
+MAX_CONTEXT_CHARS = 3_000
+MAX_PROMPT_CHARS = 6_000
+HF_MAX_TOKENS = 150
 
 class TradeEvent(BaseModel):
-    tradeId: str
-    userId: str
-    sessionId: str
-    assetClass: str
-    direction: str
-    entryPrice: float
-    quantity: float
-    entryAt: str
-    exitPrice: Optional[float] = None
-    exitAt: Optional[str] = None
-    status: Optional[str] = None
-    outcome: Optional[str] = None
+    tradeId: str = Field(..., min_length=1, max_length=MAX_ID_CHARS)
+    userId: str = Field(..., min_length=1, max_length=MAX_ID_CHARS)
+    sessionId: str = Field(..., min_length=1, max_length=MAX_ID_CHARS)
+    assetClass: str = Field(..., min_length=1, max_length=MAX_LABEL_CHARS)
+    direction: str = Field(..., min_length=1, max_length=MAX_LABEL_CHARS)
+    entryPrice: float = Field(..., gt=0)
+    quantity: float = Field(..., gt=0)
+    entryAt: str = Field(..., min_length=1, max_length=MAX_LABEL_CHARS)
+    exitPrice: Optional[float] = Field(default=None, gt=0)
+    exitAt: Optional[str] = Field(default=None, max_length=MAX_LABEL_CHARS)
+    status: Optional[str] = Field(default=None, max_length=MAX_LABEL_CHARS)
+    outcome: Optional[str] = Field(default=None, max_length=MAX_LABEL_CHARS)
     pnl: Optional[float] = None
     planAdherence: Optional[int] = Field(default=None, ge=1, le=5)
-    emotionalState: Optional[str] = None
-    entryRationale: Optional[str] = None
+    emotionalState: Optional[str] = Field(default=None, max_length=MAX_LABEL_CHARS)
+    entryRationale: Optional[str] = Field(default=None, max_length=MAX_RATIONALE_CHARS)
     revengeFlag: Optional[bool] = None
 
 def detect_signal_realtime(trade: TradeEvent) -> Optional[dict]:
@@ -201,26 +206,48 @@ def detect_signal_realtime(trade: TradeEvent) -> Optional[dict]:
 
     return None
 
-async def coaching_event_generator(request: Request, trade: TradeEvent, db: AsyncSession, signal_data: dict):
-    # Exponential backoff parameters for connection resilience (client side handling, but we can do keep-alives)
-    user_id = UUID(trade.userId)
-    relevant_sessions, active_patterns = await get_context(db, user_id, signal_data["signal"], limit=5)
-    
-    context_str = json.dumps([
-        {"sessionId": str(s.session_id), "summary": s.summary, "tags": s.tags}
-        for s in relevant_sessions
-    ])
-    
+
+def compact_session_context(relevant_sessions: list, max_chars: int = MAX_CONTEXT_CHARS) -> str:
+    """Serialize relevant memory without letting old summaries dominate the prompt."""
+    compact: list[dict] = []
+    for session in relevant_sessions:
+        candidate = {
+            "sessionId": str(session.session_id),
+            "summary": session.summary,
+            "tags": session.tags,
+        }
+        encoded = json.dumps(compact + [candidate])
+        if len(encoded) > max_chars and compact:
+            break
+        if len(encoded) > max_chars:
+            candidate["summary"] = str(session.summary or "")[:500]
+        compact.append(candidate)
+    return json.dumps(compact)
+
+
+def build_coaching_prompt(trade: TradeEvent, signal_data: dict, context_str: str) -> str:
     prompt = (
         f"You are a trading coach. The user just executed a trade with ID {trade.tradeId}.\n"
         f"Detected behavioral signal: {signal_data['signal']}\n"
         f"Evidence: {signal_data['claim']}\n"
-        f"Trade rationale: {trade.entryRationale}\n"
+        f"Trade rationale: {trade.entryRationale or 'Not provided'}\n"
         f"Past session context: {context_str}\n\n"
         "Provide a specific, evidence-based coaching message in 2-3 sentences. Do not be generic. "
         "Cite past sessions if relevant. Make it actionable and helpful."
     )
-    
+    if len(prompt) > MAX_PROMPT_CHARS:
+        return prompt[: MAX_PROMPT_CHARS - 80] + "\n\n[Context truncated to fit prompt bounds.]"
+    return prompt
+
+
+async def coaching_event_generator(request: Request, trade: TradeEvent, db: AsyncSession, signal_data: dict):
+    # Exponential backoff parameters for connection resilience (client side handling, but we can do keep-alives)
+    user_id = UUID(trade.userId)
+    relevant_sessions, _ = await get_context(db, user_id, signal_data["signal"], limit=5)
+
+    context_str = compact_session_context(relevant_sessions)
+    prompt = build_coaching_prompt(trade, signal_data, context_str)
+
     messages = [
         {"role": "system", "content": "You are a professional trading coach."},
         {"role": "user", "content": prompt}
@@ -234,11 +261,15 @@ async def coaching_event_generator(request: Request, trade: TradeEvent, db: Asyn
         }
         return
 
-    client = AsyncInferenceClient(model=HF_MODEL, token=settings.HF_TOKEN)
+    client = AsyncInferenceClient(
+        model=settings.HF_MODEL,
+        provider=settings.HF_PROVIDER or None,
+        token=settings.HF_TOKEN,
+    )
     
     try:
         # We need first token within 400ms, stream=True allows us to yield tokens as they arrive
-        response = await client.chat_completion(messages, max_tokens=150, stream=True)
+        response = await client.chat_completion(messages, max_tokens=HF_MAX_TOKENS, stream=True)
         index = 0
         async for chunk in response:
             if await request.is_disconnected():

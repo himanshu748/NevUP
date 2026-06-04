@@ -48,6 +48,8 @@ You do **not** need a `.env` file to run locally. If you want to override defaul
 | `JWT_ALGORITHM` | No | `HS256` | JWT signing algorithm |
 | `JWT_EXPIRE_HOURS` | No | `24` | Token expiry window |
 | `HF_TOKEN` | No | *(empty)* | HuggingFace Inference API token for coaching SSE |
+| `HF_MODEL` | No | `Qwen/Qwen2.5-72B-Instruct` | Hugging Face chat model used for coaching SSE |
+| `HF_PROVIDER` | No | *(empty)* | Optional Hugging Face inference provider override |
 | `LOG_LEVEL` | No | `INFO` | Logging level |
 | `POSTGRES_DB` | No | `nevup` | Postgres database name |
 | `POSTGRES_USER` | No | `nevup` | Postgres username |
@@ -146,7 +148,12 @@ Notes:
 - Session tags are normalized to lowercase underscore format, deduplicated, and
   capped at 20 tags with 64 characters each.
 - Hallucination audit payloads are bounded to 8,000 characters.
+- Trade event IDs, labels, timestamps, and rationale fields are bounded before
+  prompt construction; generated coaching prompts are compacted before provider
+  calls.
 - If `HF_TOKEN` is not set, the stream will emit an `error` event.
+- If the Hugging Face provider fails, the stream emits
+  `COACHING_PROVIDER_ERROR` instead of raw provider exception text.
 - If no behavioral signal is detected, the stream returns a single `done` event.
 
 ## Evaluation Harness

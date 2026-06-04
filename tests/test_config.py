@@ -17,6 +17,8 @@ def _reload_config(monkeypatch, **env):
         "JWT_ALGORITHM",
         "JWT_EXPIRE_HOURS",
         "HF_TOKEN",
+        "HF_MODEL",
+        "HF_PROVIDER",
         "LOG_LEVEL",
     ):
         monkeypatch.delenv(key, raising=False)
@@ -55,3 +57,15 @@ def test_rejects_unsupported_jwt_algorithm(monkeypatch):
             APP_ENV="development",
             JWT_ALGORITHM="none",
         )
+
+
+def test_huggingface_model_and_provider_are_configurable(monkeypatch):
+    config = _reload_config(
+        monkeypatch,
+        APP_ENV="development",
+        HF_MODEL="org/model",
+        HF_PROVIDER="fireworks-ai",
+    )
+
+    assert config.settings.HF_MODEL == "org/model"
+    assert config.settings.HF_PROVIDER == "fireworks-ai"

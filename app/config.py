@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_HOURS: int = 24
     HF_TOKEN: str = ""
+    HF_MODEL: str = "Qwen/Qwen2.5-72B-Instruct"
+    HF_PROVIDER: str = ""
     LOG_LEVEL: str = "INFO"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
