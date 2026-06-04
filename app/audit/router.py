@@ -5,7 +5,7 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +15,7 @@ from app.memory.models import SessionMemory
 router = APIRouter(tags=["Audit"])
 
 class AuditRequest(BaseModel):
-    coaching_response: str
+    coaching_response: str = Field(..., min_length=1, max_length=8_000)
 
 class AuditReference(BaseModel):
     sessionId: str

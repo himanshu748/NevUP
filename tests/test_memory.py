@@ -1,5 +1,6 @@
 """Tests for PUT/GET /memory/{userId}/sessions/{sessionId} and GET /memory/{userId}/context."""
 
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID
 
@@ -150,6 +151,68 @@ async def test_upsert_session_happy_path(client, user_a_token):
     assert response.status_code == 200
     body = response.json()
     assert body["sessionId"] == SESSION_ID
+
+
+@pytest.mark.asyncio
+async def test_upsert_session_normalizes_tags_and_summary(client, user_a_token):
+    """Session writes trim summaries and normalize duplicate tag variants."""
+    db_mock = AsyncMock()
+    db_mock.execute = AsyncMock(
+        return_value=MagicMock(scalar_one_or_none=lambda: None)
+    )
+    db_mock.commit = AsyncMock()
+    db_mock.add = MagicMock()
+
+    async def _refresh(r):
+        r.session_id = UUID(SESSION_ID)
+        r.user_id = UUID(USER_A_ID)
+        r.created_at = r.updated_at = datetime.now(timezone.utc)
+
+    db_mock.refresh = AsyncMock(side_effect=_refresh)
+
+    async def _mock_db():
+        yield db_mock
+
+    app.dependency_overrides[get_db] = _mock_db
+    try:
+        response = await client.put(
+            f"/memory/{USER_A_ID}/sessions/{SESSION_ID}",
+            headers=auth_header(user_a_token),
+            json={
+                "summary": "  Stayed calm after a loss.  ",
+                "metrics": {"winRate": 0.6},
+                "tags": ["Revenge Trading", "revenge_trading", " discipline "],
+            },
+        )
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"] == "Stayed calm after a loss."
+    assert body["tags"] == ["revenge_trading", "discipline"]
+
+
+@pytest.mark.asyncio
+async def test_upsert_session_rejects_blank_summary(client, user_a_token):
+    response = await client.put(
+        f"/memory/{USER_A_ID}/sessions/{SESSION_ID}",
+        headers=auth_header(user_a_token),
+        json={"summary": "   ", "tags": []},
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_upsert_session_rejects_too_many_tags(client, user_a_token):
+    response = await client.put(
+        f"/memory/{USER_A_ID}/sessions/{SESSION_ID}",
+        headers=auth_header(user_a_token),
+        json={"summary": "Test session", "tags": [f"tag_{i}" for i in range(21)]},
+    )
+
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio

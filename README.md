@@ -141,6 +141,11 @@ curl -N -X POST "http://localhost:8000/session/events" \
 
 Notes:
 - `planAdherence` is validated as a bounded 1-5 score when present.
+- Session memory summaries are trimmed, bounded to 2,000 characters, and must
+  not be blank when supplied.
+- Session tags are normalized to lowercase underscore format, deduplicated, and
+  capped at 20 tags with 64 characters each.
+- Hallucination audit payloads are bounded to 8,000 characters.
 - If `HF_TOKEN` is not set, the stream will emit an `error` event.
 - If no behavioral signal is detected, the stream returns a single `done` event.
 
