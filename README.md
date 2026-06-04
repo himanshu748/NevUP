@@ -31,6 +31,10 @@ This repo includes a `render.yaml` Blueprint to deploy:
 - a managed Postgres database
 - a managed Redis instance
 
+The optional Vercel route serves `report/index.html` as a self-contained
+evaluation summary. Detailed `eval_report.json` and `eval_report.html` files
+are local generated artifacts and are intentionally not committed.
+
 Steps:
 - Create a new Render project from this repo and select **Blueprint** deploy.
 - Set `HF_TOKEN` in the Render dashboard if you want live coaching SSE via Hugging Face Inference.

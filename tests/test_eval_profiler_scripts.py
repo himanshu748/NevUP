@@ -1,4 +1,5 @@
 from collections import defaultdict
+from pathlib import Path
 
 from eval import render_html_report
 from profiler import summarize_api_failure
@@ -26,3 +27,12 @@ def test_eval_html_report_escapes_pathology_labels():
 
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html
+
+
+def test_static_report_page_is_self_contained():
+    html = Path("report/index.html").read_text()
+
+    assert 'href="../eval_report.html"' not in html
+    assert 'href="../eval_report.json"' not in html
+    assert 'src="../eval_report.html"' not in html
+    assert "python eval.py" in html
