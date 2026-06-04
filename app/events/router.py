@@ -6,7 +6,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from huggingface_hub import AsyncInferenceClient
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
@@ -34,7 +34,7 @@ class TradeEvent(BaseModel):
     status: Optional[str] = None
     outcome: Optional[str] = None
     pnl: Optional[float] = None
-    planAdherence: Optional[str] = None
+    planAdherence: Optional[int] = Field(default=None, ge=1, le=5)
     emotionalState: Optional[str] = None
     entryRationale: Optional[str] = None
     revengeFlag: Optional[bool] = None
@@ -63,7 +63,7 @@ def detect_signal_realtime(trade: TradeEvent) -> Optional[dict]:
     rationale = trade.entryRationale or ""
     rationale_lower = rationale.lower()
     emotional_state = (trade.emotionalState or "").lower()
-    plan_adherence = trade.planAdherence  # int 1-5 or None
+    plan_adherence = trade.planAdherence
 
     # ── 1. Revenge trading ────────────────────────────────────────────────────
     if trade.revengeFlag:
@@ -120,15 +120,11 @@ def detect_signal_realtime(trade: TradeEvent) -> Optional[dict]:
             "claim": "Entry rationale indicates deviation from the pre-defined trading plan.",
         }
     # Very low adherence score alone is a strong signal
-    if plan_adherence is not None and emotional_state in ("greedy", "anxious"):
-        try:
-            if int(plan_adherence) == 1:
-                return {
-                    "signal": "plan_non_adherence",
-                    "claim": "Minimum plan-adherence score combined with elevated emotional state detected.",
-                }
-        except (ValueError, TypeError):
-            pass
+    if plan_adherence == 1 and emotional_state in ("greedy", "anxious"):
+        return {
+            "signal": "plan_non_adherence",
+            "claim": "Minimum plan-adherence score combined with elevated emotional state detected.",
+        }
 
     # ── 5. Premature exit ─────────────────────────────────────────────────────
     if "cut early" in rationale_lower:
@@ -261,11 +257,11 @@ async def coaching_event_generator(request: Request, trade: TradeEvent, db: Asyn
             "event": "done",
             "data": json.dumps({"fullMessage": "Stream complete"})
         }
-    except Exception as e:
-        logger.error(f"Error generating coaching message: {str(e)}")
+    except Exception:
+        logger.exception("Error generating coaching message")
         yield {
             "event": "error",
-            "data": json.dumps({"error": str(e)})
+            "data": json.dumps({"error": "COACHING_PROVIDER_ERROR"})
         }
 
 @router.post("/session/events")

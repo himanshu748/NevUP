@@ -13,6 +13,7 @@
 
 ## Conventions
 - Keep tenant checks strict: JWT `sub` must match every protected `userId`.
+- Validate user-facing event fields in Pydantic models instead of parsing free-form strings in route logic.
 - Do not commit generated artifacts such as `*.egg-info/`, `eval_report.html`, or `eval_report.json`.
 - Local development may generate an ephemeral JWT secret, but production must set `JWT_SECRET`.
-- Keep SSE responses graceful: emit structured `token`, `done`, or `error` events rather than raw exceptions.
+- Keep SSE responses graceful: emit structured `token`, `done`, or `error` events rather than raw exceptions, and do not stream provider exception details to clients.

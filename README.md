@@ -133,12 +133,14 @@ curl -N -X POST "http://localhost:8000/session/events" \
     \"quantity\":10,
     \"entryAt\":\"2025-01-06T09:35:00Z\",
     \"status\":\"closed\",
+    \"planAdherence\":1,
     \"entryRationale\":\"Not in plan, trying to catch the rest of the move\",
     \"revengeFlag\":false
   }"
 ```
 
 Notes:
+- `planAdherence` is validated as a bounded 1-5 score when present.
 - If `HF_TOKEN` is not set, the stream will emit an `error` event.
 - If no behavioral signal is detected, the stream returns a single `done` event.
 

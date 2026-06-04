@@ -71,6 +71,15 @@ class TestDetectSignalRealtime:
         assert result is not None
         assert result["signal"] == "plan_non_adherence"
 
+    def test_plan_adherence_string_score_is_coerced(self):
+        t = _trade(planAdherence="5", emotionalState="calm")
+        assert t.planAdherence == 5
+        assert detect_signal_realtime(t) is None
+
+    def test_plan_adherence_rejects_out_of_range_score(self):
+        with pytest.raises(ValueError):
+            _trade(planAdherence=6)
+
     def test_premature_exit_cut_early(self):
         t = _trade(entryRationale="Cut early — was scared it would reverse")
         result = detect_signal_realtime(t)
@@ -163,3 +172,25 @@ async def test_events_no_token_returns_401(client):
     }
     response = await client.post("/session/events", json=payload)
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_events_invalid_plan_adherence_returns_422(client, user_a_token):
+    """planAdherence is a bounded 1-5 score, not arbitrary text."""
+    payload = {
+        "tradeId": "t-001",
+        "userId": USER_A_ID,
+        "sessionId": "sess-001",
+        "assetClass": "forex",
+        "direction": "long",
+        "entryPrice": 1.2000,
+        "quantity": 1.0,
+        "entryAt": "2026-01-15T09:30:00Z",
+        "planAdherence": 0,
+    }
+    response = await client.post(
+        "/session/events",
+        json=payload,
+        headers=auth_header(user_a_token),
+    )
+    assert response.status_code == 422
