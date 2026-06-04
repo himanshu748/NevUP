@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0.0",
     "generated": "2026-04-24T17:38:23.255Z",
-    "description": "NevUp Hiring Hackathon 2026 — Seed Dataset. 10 synthetic trader profiles with labelled behavioural pathologies.",
+    "description": "TradeMind AI seed dataset. 10 synthetic trader profiles with labelled behavioural pathologies.",
     "schema": {
       "tradeFields": [
         "tradeId",

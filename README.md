@@ -1,13 +1,13 @@
-# NevUp AI Engine - Track 2
+# TradeMind AI
 
-Welcome to the NevUp AI Engine! This project provides the system components for the NevUp Hiring Hackathon 2026. It features a memory layer for trader profiles, a real-time behavioral profiling system, an AI coaching engine, and verification endpoints.
+TradeMind AI is a behavioral trading intelligence engine for detecting trader-risk patterns such as revenge trading, overtrading, FOMO entries, plan drift, and tilt. It combines session memory, real-time behavioral profiling, AI coaching, and hallucination audit endpoints into a portfolio-ready FastAPI service.
 
 ## Architecture
 
 - **Backend:** FastAPI (Python 3.12)
 - **Database:** PostgreSQL (with `pgdata` volume for persistence across restarts)
 - **Event Bus:** Redis Streams (with `redisdata` volume for persistence)
-- **AI Inference:** HuggingFace Inference API (`Qwen/Qwen2.5-72B-Instruct`)
+- **AI Inference:** Hugging Face Inference API (`Qwen/Qwen2.5-72B-Instruct`)
 - **Containerization:** Docker + Docker Compose
 
 ## Setup Instructions
@@ -162,7 +162,7 @@ Notes:
 
 ## Evaluation Harness
 
-You can run the evaluation script to test the behavioral profiler against the ground truth labels in `nevup_seed_dataset.json`. The script outputs the evaluation report to `eval_report.json` and generates an HTML report `eval_report.html`.
+You can run the evaluation script to test the behavioral profiler against the ground truth labels in `trademind_seed_dataset.json`. The script outputs the evaluation report to `eval_report.json` and generates an HTML report `eval_report.html`.
 
 ```bash
 python eval.py

@@ -198,10 +198,16 @@ def detect_pathologies(trader: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 async def main():
-    dataset_path = os.environ.get("NEVUP_DATASET", "nevup_seed_dataset.json")
+    dataset_path = os.environ.get(
+        "TRADEMIND_DATASET",
+        os.environ.get("NEVUP_DATASET", "trademind_seed_dataset.json"),
+    )
     data = load_dataset(dataset_path)
     
-    api_base = os.environ.get("NEVUP_API_BASE", "http://localhost:8000")
+    api_base = os.environ.get(
+        "TRADEMIND_API_BASE",
+        os.environ.get("NEVUP_API_BASE", "http://localhost:8000"),
+    )
     
     async with httpx.AsyncClient(base_url=api_base, timeout=10.0) as client:
         for trader in data.get("traders", []):

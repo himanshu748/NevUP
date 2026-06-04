@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: NevUp Trade Journal API
+  title: TradeMind Trade Journal API
   description: |
-    NevUp Hiring Hackathon 2026 — Mock API Specification.
+    TradeMind AI mock API specification.
     
     This spec defines the shared contract between all three tracks.
     Track 3 (Frontend) must consume these endpoints exactly as defined.
@@ -11,19 +11,19 @@ info:
 
     **Running the mock server locally (no account needed):**
     ```
-    npx @stoplight/prism-cli mock nevup_openapi.yaml --port 4010
+    npx @stoplight/prism-cli mock trademind_openapi.yaml --port 4010
     ```
     All Track 3 endpoints will then be live at http://localhost:4010
 
   version: "1.0.0"
   contact:
-    name: NevUp Hackathon Organizers
+    name: TradeMind AI Maintainers
 
 servers:
   - url: http://localhost:4010
     description: Local mock server (Prism)
-  - url: https://api.nevup.dev/v1
-    description: Production (Track 1 live deployment)
+  - url: https://api.trademind.example/v1
+    description: Hosted deployment placeholder
 
 security:
   - BearerAuth: []

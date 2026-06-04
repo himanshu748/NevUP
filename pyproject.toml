@@ -1,7 +1,7 @@
 [project]
-name = "nevup-ai-engine"
+name = "trademind-ai-engine"
 version = "0.1.0"
-description = "NevUp Hackathon 2026 — Track 2: System of AI Engine"
+description = "TradeMind AI — behavioral trading intelligence and coaching engine"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi[standard]>=0.115.0",

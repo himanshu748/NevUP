@@ -17,7 +17,7 @@ from app.audit.router import router as audit_router
 
 # ── Structured JSON logging ──────────────────────────────────────────────────
 
-logger = logging.getLogger("nevup")
+logger = logging.getLogger("trademind")
 
 
 class JSONFormatter(logging.Formatter):
@@ -38,7 +38,7 @@ class JSONFormatter(logging.Formatter):
 def _setup_logging() -> None:
     handler = logging.StreamHandler()
     handler.setFormatter(JSONFormatter())
-    root = logging.getLogger("nevup")
+    root = logging.getLogger("trademind")
     root.handlers.clear()
     root.addHandler(handler)
     root.setLevel(settings.LOG_LEVEL.upper())
@@ -50,16 +50,16 @@ def _setup_logging() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _setup_logging()
-    logger.info("NevUp AI Engine starting up")
+    logger.info("TradeMind AI starting up")
     yield
-    logger.info("NevUp AI Engine shutting down")
+    logger.info("TradeMind AI shutting down")
 
 
 # ── App ──────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="NevUp AI Engine — Track 2",
-    description="Behavioral AI engine for trader pathology detection.",
+    title="TradeMind AI",
+    description="Behavioral trading intelligence engine for trader-risk detection and coaching.",
     version="0.1.0",
     lifespan=lifespan,
 )

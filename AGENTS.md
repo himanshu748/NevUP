@@ -1,4 +1,4 @@
-# NevUP Agent Notes
+# TradeMind AI Agent Notes
 
 ## Project Shape
 - FastAPI service for trader behavior memory, signal detection, audit checks, and coaching SSE.

@@ -1,4 +1,4 @@
-"""Shared test fixtures for the NevUp test suite."""
+"""Shared test fixtures for the TradeMind AI test suite."""
 
 import asyncio
 from collections.abc import AsyncGenerator

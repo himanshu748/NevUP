@@ -123,7 +123,7 @@ def render_html_report(report, confusion_matrix, classes):
 
 
 def run_eval():
-    dataset = load_dataset("nevup_seed_dataset.json")
+    dataset = load_dataset("trademind_seed_dataset.json")
     report, confusion_matrix, classes = build_report(dataset)
 
     with open("eval_report.json", "w") as f:

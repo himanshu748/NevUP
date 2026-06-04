@@ -1,17 +1,17 @@
 services:
   - type: web
-    name: nevup-ai-engine
+    name: trademind-ai-engine
     runtime: docker
     plan: free
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: nevup-postgres
+          name: trademind-postgres
           property: connectionString
       - key: REDIS_URL
         fromService:
-          name: nevup-redis
+          name: trademind-redis
           type: redis
           property: connectionString
       - key: APP_ENV
@@ -28,10 +28,10 @@ services:
         value: INFO
 
   - type: redis
-    name: nevup-redis
+    name: trademind-redis
     plan: free
     maxmemoryPolicy: noeviction
 
 databases:
-  - name: nevup-postgres
+  - name: trademind-postgres
     plan: free

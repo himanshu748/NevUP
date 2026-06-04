@@ -1,1 +1,1 @@
-# NevUp AI Engine
+# TradeMind AI
