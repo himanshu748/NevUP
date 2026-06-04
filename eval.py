@@ -1,9 +1,10 @@
 import json
 from collections import defaultdict
+from html import escape
 from profiler import load_dataset, detect_pathologies
 
-def run_eval():
-    dataset = load_dataset("nevup_seed_dataset.json")
+def build_report(dataset):
+    """Build deterministic classification metrics for the local seed dataset."""
     ground_truth = {t["userId"]: set(t["pathologies"]) for t in dataset["groundTruthLabels"]}
     
     classes = dataset["meta"]["schema"]["pathologyLabels"]
@@ -61,9 +62,10 @@ def run_eval():
         "f1": round(macro_f1 / count_classes, 2)
     }
     
-    with open("eval_report.json", "w") as f:
-        json.dump(report, f, indent=2)
-        
+    return report, confusion_matrix, classes
+
+
+def render_html_report(report, confusion_matrix, classes):
     html_content = """
     <html>
     <head><title>Eval Report</title>
@@ -81,9 +83,10 @@ def run_eval():
             <tr><th>Pathology</th><th>Precision</th><th>Recall</th><th>F1-Score</th></tr>
     """
     for c in classes:
+        label = escape(c)
         html_content += f"""
             <tr>
-                <td>{c}</td>
+                <td>{label}</td>
                 <td>{report[c]['precision']}</td>
                 <td>{report[c]['recall']}</td>
                 <td>{report[c]['f1']}</td>
@@ -103,10 +106,10 @@ def run_eval():
         <table>
             <tr><th>True \\ Pred</th>
     """
-    html_content += "".join(f"<th>{c}</th>" for c in classes) + "<th>None</th></tr>"
+    html_content += "".join(f"<th>{escape(c)}</th>" for c in classes) + "<th>None</th></tr>"
     
     for t_label in classes:
-        html_content += f"<tr><td><strong>{t_label}</strong></td>"
+        html_content += f"<tr><td><strong>{escape(t_label)}</strong></td>"
         for p_label in classes:
             html_content += f"<td>{confusion_matrix[t_label][p_label]}</td>"
         html_content += f"<td>{confusion_matrix[t_label]['None']}</td></tr>"
@@ -116,8 +119,18 @@ def run_eval():
     </body>
     </html>
     """
+    return html_content
+
+
+def run_eval():
+    dataset = load_dataset("nevup_seed_dataset.json")
+    report, confusion_matrix, classes = build_report(dataset)
+
+    with open("eval_report.json", "w") as f:
+        json.dump(report, f, indent=2)
+
     with open("eval_report.html", "w") as f:
-        f.write(html_content)
+        f.write(render_html_report(report, confusion_matrix, classes))
 
 if __name__ == "__main__":
     run_eval()

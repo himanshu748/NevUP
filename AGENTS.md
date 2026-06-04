@@ -19,3 +19,4 @@
 - Do not commit generated artifacts such as `*.egg-info/`, `eval_report.html`, or `eval_report.json`.
 - Local development may generate an ephemeral JWT secret, but production must set `JWT_SECRET`.
 - Keep SSE responses graceful: emit structured `token`, `done`, or `error` events rather than raw exceptions, and do not stream provider exception details to clients.
+- CLI evaluation/profiler scripts must also avoid printing raw API/provider response bodies because they can contain local paths, tokens, or stack traces.

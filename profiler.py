@@ -1,7 +1,7 @@
 import asyncio
 import json
+import os
 import uuid
-from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import httpx
@@ -15,6 +15,24 @@ async def get_token(client: httpx.AsyncClient, user_id: str, name: str = "Eval R
 def load_dataset(path: str) -> dict[str, Any]:
     with open(path) as f:
         return json.load(f)
+
+
+def summarize_api_failure(status_code: int, body: str) -> str:
+    """Return a bounded, non-sensitive API failure summary for CLI output."""
+    if status_code >= 500:
+        category = "server_error"
+    elif status_code == 401:
+        category = "unauthorized"
+    elif status_code == 403:
+        category = "forbidden"
+    elif status_code == 404:
+        category = "not_found"
+    elif status_code >= 400:
+        category = "client_error"
+    else:
+        category = "unexpected_status"
+
+    return f"{status_code} {category}; response body omitted ({len(body)} bytes)"
 
 
 def detect_pathologies(trader: dict[str, Any]) -> list[dict[str, Any]]:
@@ -73,7 +91,7 @@ def detect_pathologies(trader: dict[str, Any]) -> list[dict[str, Any]]:
                         afternoon_trades.append((s_id, t_id, t.get("pnl"), hour))
                     elif t.get("outcome") == "win":
                         time_wins += 1
-            except Exception:
+            except (TypeError, ValueError):
                 pass
             
             # 1. Revenge Trading
@@ -180,10 +198,10 @@ def detect_pathologies(trader: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 async def main():
-    dataset_path = "nevup_seed_dataset.json"
+    dataset_path = os.environ.get("NEVUP_DATASET", "nevup_seed_dataset.json")
     data = load_dataset(dataset_path)
     
-    api_base = "http://localhost:8000"
+    api_base = os.environ.get("NEVUP_API_BASE", "http://localhost:8000")
     
     async with httpx.AsyncClient(base_url=api_base, timeout=10.0) as client:
         for trader in data.get("traders", []):
@@ -224,7 +242,8 @@ async def main():
                 if response.status_code in (200, 201):
                     print(f"  -> Successfully stored profile via memory layer ({profile_session_id})")
                 else:
-                    print(f"  -> Failed to store profile: {response.status_code} {response.text}")
+                    failure = summarize_api_failure(response.status_code, response.text)
+                    print(f"  -> Failed to store profile: {failure}")
 
 
 if __name__ == "__main__":
